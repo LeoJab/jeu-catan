@@ -49,10 +49,10 @@ input,select{font:inherit;border:3px solid var(--ink);border-radius:10px;padding
 /* mid */
 #mid{flex:1;display:flex;min-height:0;position:relative}
 #boardWrap{flex:1;position:relative;min-width:0;overflow:hidden;border-top:3px solid var(--ink);border-bottom:3px solid var(--ink);background:radial-gradient(ellipse at 50% 45%,#47c6f5 0%,#1f86e3 55%,#1747b8 100%)}
-#boardWrap::before,#boardWrap::after{content:'';position:absolute;inset:0;pointer-events:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='46'%3E%3Cpath d='M0 23 q17.5 -12 35 0 t35 0 t35 0 t35 0' fill='none' stroke='white' stroke-opacity='.13' stroke-width='3'/%3E%3C/svg%3E");animation:waves 9s linear infinite}
-#boardWrap::after{background-size:200px 70px;animation-duration:14s;animation-direction:reverse;opacity:.7}
-@keyframes waves{from{background-position:0 0}to{background-position:140px 0}}
-#board{width:100%;height:100%;display:block;touch-action:none;position:relative;z-index:1;cursor:grab}
+#boardWrap::before,#boardWrap::after{content:'';position:absolute;inset:0;pointer-events:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='46'%3E%3Cpath d='M0 23 q17.5 -12 35 0 t35 0 t35 0 t35 0' fill='none' stroke='white' stroke-opacity='.13' stroke-width='3'/%3E%3C/svg%3E");inset:0 auto 0 -280px;width:calc(100% + 560px);will-change:transform;animation:waves 9s linear infinite}
+#boardWrap::after{background-size:200px 70px;animation:waves2 14s linear infinite;opacity:.7}
+@keyframes waves{from{transform:translateX(0)}to{transform:translateX(140px)}}@keyframes waves2{from{transform:translateX(200px)}to{transform:translateX(0)}}
+#hot{touch-action:none}#board{width:100%;height:100%;display:block;touch-action:none;position:relative;z-index:1;cursor:grab}
 #board.drag{cursor:grabbing}
 #status{position:absolute;top:8px;left:50%;transform:translateX(-50%);z-index:2;background:#fff;border:3px solid var(--ink);border-radius:999px;box-shadow:var(--sh);padding:6px 14px;font-size:14px;white-space:nowrap;max-width:calc(100% - 20px);overflow:hidden;text-overflow:ellipsis;pointer-events:none}
 #status.mine{background:var(--yel);animation:mine 1s infinite alternate}
@@ -213,7 +213,7 @@ table.res td:first-child,table.res th:first-child{text-align:left}
 @keyframes tokHot{20%,60%{transform:scale(1.35)}}
 .tok{transform-box:fill-box;transform-origin:center}
 .tile.robbed .hexp{filter:brightness(.55) saturate(.6)}
-.surf{animation:surf 3.2s ease-in-out infinite alternate}
+.surf{opacity:.4}
 @keyframes surf{from{opacity:.25}to{opacity:.6}}
 .pc{transform-box:fill-box;transform-origin:center bottom}
 .pc.pop{animation:popB .6s cubic-bezier(.3,1.8,.5,1)}
@@ -226,10 +226,14 @@ table.res td:first-child,table.res th:first-child{text-align:left}
 .rb.wob{animation:wob .6s}
 @keyframes wob{25%{transform:rotate(-14deg)}50%{transform:rotate(12deg)}75%{transform:rotate(-6deg)}}
 .hv,.he,.ht,.hc{cursor:pointer;transform-box:fill-box;transform-origin:center}
-.hv{fill:#fff;stroke:var(--ink);stroke-width:3;animation:pulse .8s infinite alternate}
-.hc{fill:none;stroke:#fff;stroke-width:4;stroke-dasharray:6 4;animation:pulse .8s infinite alternate}
-.he{stroke:#fff;stroke-width:9;stroke-linecap:round;opacity:.85;animation:pulseE .8s infinite alternate}
-.ht{fill:rgba(230,57,70,.25);stroke:#e63946;stroke-width:4;stroke-dasharray:8 6;animation:pulseT 1s infinite alternate}
+.hv{fill:#fff;stroke:var(--ink);stroke-width:3}
+.hc{fill:none;stroke:#fff;stroke-width:4;stroke-dasharray:6 4}
+.he{stroke:#fff;stroke-width:9;stroke-linecap:round}
+.ht{fill:rgba(230,57,70,.25);stroke:#e63946;stroke-width:4;stroke-dasharray:8 6}
+#hot{position:absolute;inset:0;width:100%;height:100%;z-index:1;pointer-events:none;will-change:opacity;animation:hotP .75s ease-in-out infinite alternate}
+#hot [data-h]{pointer-events:auto}
+@keyframes hotP{from{opacity:.5}to{opacity:1}}
+#actions.pending{opacity:.55;pointer-events:none}
 .hv:hover,.he:hover{fill:var(--yel);stroke:var(--yel)}
 .he:hover{stroke:var(--yel)}
 .ht:hover{fill:rgba(230,57,70,.5)}
@@ -268,6 +272,7 @@ table.res td:first-child,table.res th:first-child{text-align:left}
   <main id="mid">
     <div id="boardWrap">
       <svg id="board" xmlns="http://www.w3.org/2000/svg"></svg>
+      <svg id="hot" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet"></svg>
       <div id="status"></div>
       <div id="offer"></div>
       <div id="lastDice"></div>
@@ -826,7 +831,7 @@ function banner(text, o = {}) {
     b.style.setProperty('--bc', o.color || '#ffd426'); b.style.color = o.ink || '#12102b';
     b.innerHTML = `<div class="bt">${text}</div>${o.sub ? `<div class="bs">${o.sub}</div>` : ''}`;
     layer().appendChild(b);
-    setTimeout(() => { b.classList.add('out'); setTimeout(() => { b.remove(); res(); }, 400); }, o.dur || 1500);
+    setTimeout(() => { b.classList.add('out'); setTimeout(() => { b.remove(); }, 400); res(); }, Math.round((o.dur || 1300) * .8));
   });
 }
 function toast(t) { const d = document.createElement('div'); d.className = 'toast'; d.textContent = t; $('#toasts').appendChild(d); setTimeout(() => d.remove(), 2700); }
@@ -878,7 +883,7 @@ async function runFx() {
   while (fxQ.length) {
     const e = fxQ.shift();
     if (document.hidden || fxQ.length > 10) continue;
-    if (fxQ.length > 3 && !['win', 'seven', 'lr', 'la'].includes(e.k)) continue;
+    if (fxQ.length > 2 && !['win', 'seven', 'lr', 'la', 'dice'].includes(e.k)) continue;
     try { await playFx(e); } catch (err) { console.error(err); }
   }
   fxBusy = false;
@@ -899,7 +904,7 @@ function diceAnim(d) {
     })));
     sfx.dice();
     setTimeout(() => { w.classList.add('landed'); sfx.land(); const r = w.getBoundingClientRect(); burst(r.left + r.width / 2, r.top + r.height / 2 + 30, { n: 20, colors: ['#fff', '#ffd426'], speed: 4, life: 25 }); }, 1150);
-    setTimeout(() => { w.classList.add('out'); setTimeout(() => { w.remove(); res(); }, 350); }, 2000);
+    setTimeout(() => { w.classList.add('out'); setTimeout(() => w.remove(), 350); res(); }, 1650);
   });
 }
 async function playFx(e) {
@@ -1050,6 +1055,14 @@ function leaveRoom(silent) {
   if (!silent) { S = null; view = 'home'; }
 }
 function updHost() { NET.isHost = !!(NET.players[0] && NET.players[0].id === NET.myId); }
+/* Qui fait foi : le joueur dont c'est le tour (réaction instantanée pour lui), sinon l'hôte s'il est absent */
+function authId() {
+  if (!S) return NET.players[0] && NET.players[0].id;
+  const c = S.players[S.cur];
+  if (c && S.phase !== 'over' && isOnlineP(c.id)) return c.id;
+  return NET.players[0] && NET.players[0].id;
+}
+const amAuth = () => !!NET.myId && authId() === NET.myId;
 function sayHello() { if (!NET.room) return; NET.room.send({ t: 'hello', av: ME.avatar || null }); if (NET.isHost && !S) NET.room.send({ t: 'lcfg', cfg: NET.cfg }); }
 function onMsg(d, from) {
   if (!d || typeof d !== 'object') return;
@@ -1060,10 +1073,10 @@ function onMsg(d, from) {
       else if (s.v > S.v) loadState(s, false);
       break;
     }
-    case 'act': if (NET.isHost && d.a) handleAct(d.a, from); break;
+    case 'act': if (amAuth() && d.a) handleAct(d.a, from); break;
     case 'hello': NET.avatars[from.id] = d.av || null; if (view === 'lobby') render(); break;
     case 're': if (S) { const i = S.players.findIndex(p => p.id === from.id); if (i >= 0 && typeof d.e === 'string') { pastilleReact(i, d.e.slice(0, 4)); sfx.pop(); } } break;
-    case 'err': if (d.to === NET.myId) toast('⚠️ ' + d.m); break;
+    case 'err': if (d.to === NET.myId) { toast('⚠️ ' + d.m); ui.pending = false; if (S) render(); } break;
     case 'lcfg': if (!NET.isHost && d.cfg) { NET.cfg = d.cfg; if (view === 'lobby') render(); } break;
   }
 }
@@ -1079,7 +1092,7 @@ function hostApply(fn) { const N = clone(S); const err = fn(N); if (err) return 
 function handleAct(a, from) {
   if (!S) return;
   if (a.k === 'auto') {
-    if (from.id !== NET.myId) return;
+    if (!NET.players[0] || from.id !== NET.players[0].id) return;
     const err = hostApply(N => {
       const offs = N.players.map((_, i) => i).filter(i => !isOnlineP(N.players[i].id)); let did = 0;
       for (let it = 0; it < 40; it++) { let moved = false; for (const p of offs) { const x = autoAction(N, p); if (x && !act(N, x)) { moved = true; did++; } } if (!moved) break; }
@@ -1098,7 +1111,12 @@ function dispatch(a) {
     const N = clone(S); const err = act(N, a); if (err) { toast('⚠️ ' + err); return false; }
     N.v = S.v + 1; loadState(N, false); saveLocal(); return true;
   }
-  if (NET.isHost) handleAct(a, { id: NET.myId }); else NET.room.send({ t: 'act', a });
+  if (amAuth()) handleAct(a, { id: NET.myId });
+  else {
+    NET.room.send({ t: 'act', a });
+    ui.pending = true; $('#actions').classList.add('pending');
+    clearTimeout(ui.pendT); ui.pendT = setTimeout(() => { ui.pending = false; if (S) render(); }, 2500);
+  }
   return true;
 }
 function saveLocal() { if (!NET.online && S) lsSet('catan-local', JSON.stringify(S)); }
@@ -1109,7 +1127,7 @@ function sendReact(e) {
 }
 function loadState(N, initial) {
   const fresh = !S || S.id !== N.id;
-  S = N; view = 'game';
+  S = N; view = 'game'; ui.pending = false; clearTimeout(ui.pendT);
   if (fresh) { buildBoard(); ui.hideOver = false; ui.prevHand = null; ui.mode = null; ui.modal = null; lastSeq = initial ? S.seq : 0; }
   else if (initial) lastSeq = S.seq;
   if (S.phase !== 'act' || myIdx() !== S.cur) { ui.mode = null; if (ui.modal && ['trade', 'yop', 'mono', 'devinfo'].includes(ui.modal.type)) ui.modal = null; }
@@ -1155,7 +1173,8 @@ function tileArt(r, cx, cy, seed) {
 }
 const TILE_GRAD = { 0: ['#4cc35a', '#2b8a37'], 1: ['#f08a5d', '#c9532e'], 2: ['#c9f27a', '#8fcf45'], 3: ['#ffe36b', '#eab521'], 4: ['#c3ccd9', '#8592a8'], '-1': ['#f7e3b0', '#e2c27e'] };
 const VB = { x: 0, y: 0, w: 100, h: 100, base: null };
-function setVB() { $('#board').setAttribute('viewBox', `${f1(VB.x)} ${f1(VB.y)} ${f1(VB.w)} ${f1(VB.h)}`); }
+function setVB() { const vb = `${f1(VB.x)} ${f1(VB.y)} ${f1(VB.w)} ${f1(VB.h)}`; $('#board').setAttribute('viewBox', vb); $('#hot').setAttribute('viewBox', vb); }
+function setHTML(el, h) { if (!el) return; if (el._h !== h) { el.innerHTML = h; el._h = h; } }
 function buildBoard() {
   const g = G_(S), svg = $('#board'), seed = hashStr(String(S.id));
   const m = 78, bx = g.box;
@@ -1188,7 +1207,8 @@ function buildBoard() {
       : `<text x="${f1(px)}" y="${f1(py + 1)}" text-anchor="middle" font-size="13">${RES[pt.t].e}</text><text x="${f1(px)}" y="${f1(py + 13)}" text-anchor="middle" font-family="Lilita One, Arial Black, sans-serif" font-size="10" fill="#12102b">2:1</text>`;
     ports += `${pier(A)}${pier(B)}<circle cx="${f1(px + 2)}" cy="${f1(py + 2)}" r="17" fill="#12102b"/><circle cx="${f1(px)}" cy="${f1(py)}" r="17" fill="${pt.t < 0 ? '#fff' : RES[pt.t].c}" stroke="#12102b" stroke-width="3"/>${pt.t >= 0 ? `<circle cx="${f1(px)}" cy="${f1(py)}" r="12" fill="#ffffffaa"/>` : ''}${lab}`;
   });
-  svg.innerHTML = defs + `<g class="surf">${surf}</g><g>${beach}</g><g id="lPorts">${ports}</g><g id="lTiles">${tiles}</g><g id="lRoads"></g><g id="lBld"></g><g id="lRobber"></g><g id="lHot"></g>`;
+  svg.innerHTML = defs + `<g class="surf">${surf}</g><g>${beach}</g><g id="lPorts">${ports}</g><g id="lTiles">${tiles}</g><g id="lRoads"></g><g id="lBld"></g><g id="lRobber"></g>`;
+  $('#hot').innerHTML = ''; $('#hot')._h = '';
 }
 function settlementPath(x, y) { return `M${f1(x - 9)} ${f1(y + 8)}V${f1(y - 2)}L${f1(x)} ${f1(y - 11)}L${f1(x + 9)} ${f1(y - 2)}V${f1(y + 8)}Z`; }
 function cityPath(x, y) { return `M${f1(x - 14)} ${f1(y + 10)}V${f1(y - 5)}L${f1(x - 7)} ${f1(y - 13)}L${f1(x)} ${f1(y - 5)}V${f1(y - 1)}H${f1(x + 14)}V${f1(y + 10)}Z`; }
@@ -1200,15 +1220,15 @@ function renderBoardDyn() {
     const x1 = A.x + (B.x - A.x) * k, y1 = A.y + (B.y - A.y) * k, x2 = B.x + (A.x - B.x) * k, y2 = B.y + (A.y - B.y) * k, col = pcol(S.rd[e]);
     rd += `<g data-be="${e}"><line class="rdl" x1="${f1(x1)}" y1="${f1(y1)}" x2="${f1(x2)}" y2="${f1(y2)}" stroke="#12102b" stroke-width="12" stroke-linecap="round"/><line class="rdl" x1="${f1(x1)}" y1="${f1(y1)}" x2="${f1(x2)}" y2="${f1(y2)}" stroke="${col}" stroke-width="6.5" stroke-linecap="round"/></g>`;
   }
-  $('#lRoads').innerHTML = rd;
+  setHTML($('#lRoads'), rd);
   let bl = '';
   for (const v in S.bld) {
     const [p, lvl] = S.bld[v], V = g.verts[v], col = pcol(p), path = lvl === 2 ? cityPath : settlementPath;
     bl += `<g data-bv="${v}"><g class="pc"><path d="${path(V.x + 2.5, V.y + 2.5)}" fill="#12102b"/><path d="${path(V.x, V.y)}" fill="${col}" stroke="#12102b" stroke-width="2.6" stroke-linejoin="round"/>${lvl === 2 ? `<rect x="${f1(V.x + 3)}" y="${f1(V.y + 2)}" width="4" height="4" fill="#12102b" opacity=".55"/><rect x="${f1(V.x - 9)}" y="${f1(V.y - 3)}" width="4" height="4" fill="#12102b" opacity=".55"/>` : `<rect x="${f1(V.x - 2)}" y="${f1(V.y + 1)}" width="4" height="7" fill="#12102b" opacity=".5"/>`}</g></g>`;
   }
-  $('#lBld').innerHTML = bl;
+  setHTML($('#lBld'), bl);
   const T = g.tiles[S.robber], rx = T.x, ry = T.y + (S.board.tiles[S.robber].n ? 30 : 4);
-  $('#lRobber').innerHTML = `<g id="robber" transform="translate(${f1(rx)},${f1(ry)})"><g class="rb"><ellipse cx="0" cy="13" rx="13" ry="4" fill="rgba(0,0,0,.35)"/><path d="M-10 12 Q-12 -4 -5 -8 A8 8 0 1 1 5 -8 Q12 -4 10 12 Z" fill="#2b2d42" stroke="#12102b" stroke-width="2.6"/><circle cx="-3" cy="-15" r="1.8" fill="#ff4d4d"/><circle cx="3" cy="-15" r="1.8" fill="#ff4d4d"/></g></g>`;
+  setHTML($('#lRobber'), `<g id="robber" transform="translate(${f1(rx)},${f1(ry)})"><g class="rb"><ellipse cx="0" cy="13" rx="13" ry="4" fill="rgba(0,0,0,.35)"/><path d="M-10 12 Q-12 -4 -5 -8 A8 8 0 1 1 5 -8 Q12 -4 10 12 Z" fill="#2b2d42" stroke="#12102b" stroke-width="2.6"/><circle cx="-3" cy="-15" r="1.8" fill="#ff4d4d"/><circle cx="3" cy="-15" r="1.8" fill="#ff4d4d"/></g></g>`);
   document.querySelectorAll('.tile').forEach(el => el.classList.toggle('robbed', +el.dataset.t === S.robber));
   // zones cliquables
   let h = ''; const hs = hotspots();
@@ -1216,7 +1236,7 @@ function renderBoardDyn() {
   hs.e.forEach(e => { const [a, b] = g.edges[e].v, A = g.verts[a], B = g.verts[b], k = .2; h += `<line class="he" data-h="e:${e}" x1="${f1(A.x + (B.x - A.x) * k)}" y1="${f1(A.y + (B.y - A.y) * k)}" x2="${f1(B.x + (A.x - B.x) * k)}" y2="${f1(B.y + (A.y - B.y) * k)}"/>`; });
   hs.v.forEach(v => { const V = g.verts[v]; h += `<circle class="hv" data-h="v:${v}" cx="${f1(V.x)}" cy="${f1(V.y)}" r="9"/>`; });
   hs.c.forEach(v => { const V = g.verts[v]; h += `<circle class="hc" data-h="v:${v}" cx="${f1(V.x)}" cy="${f1(V.y)}" r="18"/>`; });
-  $('#lHot').innerHTML = h;
+  setHTML($('#hot'), h);
 }
 function hotspots() {
   const out = { v: [], e: [], t: [], c: [] }; if (!S || S.phase === 'over') return out;
@@ -1247,7 +1267,7 @@ function render() {
 }
 function renderPlayers() {
   const mi = myIdx();
-  $('#players').innerHTML = S.players.map((p, i) => {
+  setHTML($('#players'), S.players.map((p, i) => {
     const off = NET.online && !isOnlineP(p.id), show = (!NET.online || i === mi || S.phase === 'over');
     const pv = vp(S, i, show), cards = sum(p.r), devs = sumO(p.dev) + sumO(p.nd);
     return `<div class="pl ${i === S.cur ? 'cur' : ''} ${off ? 'off' : ''}" data-pi="${i}" style="--pc:${COLORS[p.col].c}" title="${esc(p.name)}${off ? ' (absent)' : ''}">
@@ -1257,7 +1277,7 @@ function renderPlayers() {
       ${S.lr === i ? '<span class="badge" title="Route la plus longue (+2)">🛣️</span>' : ''}${S.la === i ? '<span class="badge" title="Armée la plus puissante (+2)">🛡️</span>' : ''}
       ${S.phase === 'discard' && S.disc[i] != null ? '<span class="wait" title="Doit défausser">🗑️</span>' : ''}
     </div>`;
-  }).join('');
+  }).join(''));
 }
 function renderStatus() {
   const mi = myIdx(), c = S.cur, cn = esc(nm(S, c)), mine = mi === c;
@@ -1272,8 +1292,8 @@ function renderStatus() {
     case 'act': hot = mine && !!ui.mode; t = mine ? (ui.mode ? { road: '🛣️ Clique où poser ta route', set: '🏠 Clique où fonder ta colonie', city: '🏰 Clique sur une colonie à améliorer' }[ui.mode] : `🔨 ${NET.online ? 'À toi' : cn} : construis, échange ou passe`) : `⏳ ${cn} joue…`; break;
     case 'over': t = `🏆 ${esc(nm(S, S.winner))} a gagné !`; break;
   }
-  const st = $('#status'); st.innerHTML = t; st.classList.toggle('mine', hot);
-  $('#lastDice').innerHTML = S.dice ? S.dice.map(d => `<div class="md ${S.dice[0] + S.dice[1] === 7 ? 'seven' : ''}">${d}</div>`).join('') : '';
+  const st = $('#status'); setHTML(st, t); st.classList.toggle('mine', hot);
+  setHTML($('#lastDice'), S.dice ? S.dice.map(d => `<div class="md ${S.dice[0] + S.dice[1] === 7 ? 'seven' : ''}">${d}</div>`).join('') : '');
 }
 const costHTML = c => c.map((n, i) => n ? RES[i].e.repeat(n) : '').join('');
 function renderBottom() {
@@ -1292,7 +1312,7 @@ function renderBottom() {
     });
     if (dv) hand += `<div class="sepv"></div>` + dv;
   } else hand = `<div class="spect">👀 Tu regardes la partie en spectateur</div>`;
-  $('#handRow').innerHTML = hand;
+  setHTML($('#handRow'), hand);
   let A = '';
   if (mine) {
     if (S.phase === 'roll') A += `<button class="btn big" data-a="roll">🎲 Lancer les dés</button>`;
@@ -1311,11 +1331,11 @@ function renderBottom() {
     const needs = offs.some(i => (S.cur === i && S.phase !== 'discard') || (S.phase === 'discard' && S.disc[i] != null));
     if (needs) A += `<button class="btn r" data-a="auto">⏭️ Jouer pour les absents</button>`;
   }
-  $('#actions').innerHTML = A;
+  setHTML($('#actions'), A); $('#actions').classList.toggle('pending', !!ui.pending);
 }
 function renderOffer() {
   const o = S.offer, box = $('#offer');
-  if (!o || S.phase !== 'act') { box.innerHTML = ''; return; }
+  if (!o || S.phase !== 'act') { setHTML(box, ''); return; }
   const mi = myIdx(), c = S.cur, chips = a => a.map((n, i) => n ? `<span class="chip">${n}${RES[i].e}</span>` : '').join('');
   let act = '';
   if (mi === c) {
@@ -1331,8 +1351,8 @@ function renderOffer() {
     if (o.acc.includes(mi)) act += `<span style="font-size:13px">✅ Tu as accepté, ${esc(nm(S, c))} décide…</span><button class="btn w" data-a="decline">Retirer</button>`;
     else act += `<button class="btn g" data-a="accept" ${can ? '' : 'disabled'}>✅ Accepter</button><button class="btn r" data-a="decline">❌ Refuser</button>${can ? '' : '<span style="font-size:12px;opacity:.7">Tu n\'as pas les cartes</span>'}`;
   }
-  box.innerHTML = `<div class="offer"><div class="oh">🤝 ${esc(nm(S, c))} propose un échange</div>
-    <div class="orow"><span class="lab">Il donne</span>${chips(o.give)}</div><div class="orow"><span class="lab">Il veut</span>${chips(o.want)}</div><div class="oact">${act}</div></div>`;
+  setHTML(box, `<div class="offer"><div class="oh">🤝 ${esc(nm(S, c))} propose un échange</div>
+    <div class="orow"><span class="lab">Il donne</span>${chips(o.give)}</div><div class="orow"><span class="lab">Il veut</span>${chips(o.want)}</div><div class="oact">${act}</div></div>`);
 }
 function logHTML() { return S.log.map(l => `<div style="--lc:${l.p >= 0 && S.players[l.p] ? pcol(l.p) : '#ccc'}">${esc(l.t)}</div>`).join(''); }
 function bankHTML() { return RES.map((r, i) => `<span class="chip">${r.e} ${S.bank[i]}</span>`).join('') + `<span class="chip">🃏 ${S.deck.length}</span>`; }
@@ -1364,7 +1384,7 @@ function renderModal() {
       html = overHTML();
     } else if (ui.modal) html = modalHTML(ui.modal);
   } else if (ui.modal && ui.modal.type === 'help') html = modalHTML(ui.modal);
-  M.innerHTML = html; M.classList.toggle('show', !!html);
+  setHTML(M, html); M.classList.toggle('show', !!html);
 }
 function overHTML() {
   const rows = S.players.map((p, i) => ({ i, p, v: vp(S, i) })).sort((a, b) => b.v - a.v);
@@ -1566,10 +1586,11 @@ function zoomAt(cx, cy, k) {
   VB.x = pt.x - (pt.x - VB.x) * k; VB.y = pt.y - (pt.y - VB.y) * k; VB.w *= k; VB.h *= k; setVB();
 }
 function initPanZoom() {
-  const svg = $('#board'), pts = new Map(); let last = null, pinch = 0, downAt = null;
-  svg.addEventListener('wheel', e => { e.preventDefault(); zoomAt(e.clientX, e.clientY, e.deltaY > 0 ? 1.12 : 1 / 1.12); }, { passive: false });
-  svg.addEventListener('pointerdown', e => { pts.set(e.pointerId, { x: e.clientX, y: e.clientY }); dragMoved = false; downAt = { x: e.clientX, y: e.clientY }; last = { x: e.clientX, y: e.clientY }; if (pts.size === 2) { const [a, b] = [...pts.values()]; pinch = Math.hypot(a.x - b.x, a.y - b.y); } });
-  svg.addEventListener('pointermove', e => {
+  const svg = $('#board'), wrap = $('#boardWrap'), pts = new Map(); let last = null, pinch = 0, downAt = null;
+  const skip = e => e.target.closest && e.target.closest('button,#offer,#zoom');
+  wrap.addEventListener('wheel', e => { if (skip(e)) return; e.preventDefault(); zoomAt(e.clientX, e.clientY, e.deltaY > 0 ? 1.12 : 1 / 1.12); }, { passive: false });
+  wrap.addEventListener('pointerdown', e => { if (skip(e)) return; pts.set(e.pointerId, { x: e.clientX, y: e.clientY }); dragMoved = false; downAt = { x: e.clientX, y: e.clientY }; last = { x: e.clientX, y: e.clientY }; if (pts.size === 2) { const [a, b] = [...pts.values()]; pinch = Math.hypot(a.x - b.x, a.y - b.y); } });
+  wrap.addEventListener('pointermove', e => {
     if (!pts.has(e.pointerId)) return; pts.set(e.pointerId, { x: e.clientX, y: e.clientY });
     if (pts.size === 2) { const [a, b] = [...pts.values()], d = Math.hypot(a.x - b.x, a.y - b.y); if (pinch) zoomAt((a.x + b.x) / 2, (a.y + b.y) / 2, pinch / d); pinch = d; dragMoved = true; return; }
     if (downAt && Math.hypot(e.clientX - downAt.x, e.clientY - downAt.y) > 8) { dragMoved = true; svg.classList.add('drag'); }
@@ -1577,8 +1598,8 @@ function initPanZoom() {
     last = { x: e.clientX, y: e.clientY };
   });
   const up = e => { pts.delete(e.pointerId); if (pts.size < 2) pinch = 0; if (!pts.size) { svg.classList.remove('drag'); last = null; downAt = null; setTimeout(() => { dragMoved = false; }, 0); } };
-  svg.addEventListener('pointerup', up); svg.addEventListener('pointercancel', up); svg.addEventListener('pointerleave', up);
-  svg.addEventListener('click', onBoardClick);
+  wrap.addEventListener('pointerup', up); wrap.addEventListener('pointercancel', up); wrap.addEventListener('pointerleave', up);
+  wrap.addEventListener('click', onBoardClick);
   $('#zIn').onclick = () => { const r = svg.getBoundingClientRect(); zoomAt(r.left + r.width / 2, r.top + r.height / 2, 1 / 1.25); };
   $('#zOut').onclick = () => { const r = svg.getBoundingClientRect(); zoomAt(r.left + r.width / 2, r.top + r.height / 2, 1.25); };
   $('#zFit').onclick = () => { if (VB.base) { Object.assign(VB, VB.base); setVB(); } };
