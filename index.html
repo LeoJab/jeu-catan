@@ -227,15 +227,18 @@ table.res td:first-child,table.res th:first-child{text-align:left}
 @keyframes wob{25%{transform:rotate(-14deg)}50%{transform:rotate(12deg)}75%{transform:rotate(-6deg)}}
 .hv,.he,.ht,.hc{cursor:pointer;transform-box:fill-box;transform-origin:center}
 .hv{fill:#fff;stroke:var(--ink);stroke-width:3}
-.hc{fill:none;stroke:#fff;stroke-width:4;stroke-dasharray:6 4}
+.hc{fill:rgba(255,255,255,.28);stroke:#fff;stroke-width:4;stroke-dasharray:6 4}
+.hit{fill:transparent;stroke:transparent;pointer-events:all;cursor:pointer}
+#hot g[data-h]{cursor:pointer}
 .he{stroke:#fff;stroke-width:9;stroke-linecap:round}
 .ht{fill:rgba(230,57,70,.25);stroke:#e63946;stroke-width:4;stroke-dasharray:8 6}
 #hot{position:absolute;inset:0;width:100%;height:100%;z-index:1;pointer-events:none;will-change:opacity;animation:hotP .75s ease-in-out infinite alternate}
 #hot [data-h]{pointer-events:auto}
 @keyframes hotP{from{opacity:.5}to{opacity:1}}
 #actions.pending{opacity:.55;pointer-events:none}
-.hv:hover,.he:hover{fill:var(--yel);stroke:var(--yel)}
-.he:hover{stroke:var(--yel)}
+[data-h]:hover .hv{fill:var(--yel)}
+[data-h]:hover .he{stroke:var(--yel)}
+[data-h]:hover .hc{fill:rgba(255,212,38,.55);stroke:var(--yel)}
 .ht:hover{fill:rgba(230,57,70,.5)}
 @keyframes pulse{from{transform:scale(.8)}to{transform:scale(1.15)}}
 @keyframes pulseE{from{opacity:.45}to{opacity:1}}
@@ -1233,9 +1236,10 @@ function renderBoardDyn() {
   // zones cliquables
   let h = ''; const hs = hotspots();
   hs.t.forEach(t => { h += `<polygon class="ht" data-h="t:${t}" points="${hexPts(t, .9)}"/>`; });
-  hs.e.forEach(e => { const [a, b] = g.edges[e].v, A = g.verts[a], B = g.verts[b], k = .2; h += `<line class="he" data-h="e:${e}" x1="${f1(A.x + (B.x - A.x) * k)}" y1="${f1(A.y + (B.y - A.y) * k)}" x2="${f1(B.x + (A.x - B.x) * k)}" y2="${f1(B.y + (A.y - B.y) * k)}"/>`; });
-  hs.v.forEach(v => { const V = g.verts[v]; h += `<circle class="hv" data-h="v:${v}" cx="${f1(V.x)}" cy="${f1(V.y)}" r="9"/>`; });
-  hs.c.forEach(v => { const V = g.verts[v]; h += `<circle class="hc" data-h="v:${v}" cx="${f1(V.x)}" cy="${f1(V.y)}" r="18"/>`; });
+  hs.e.forEach(e => { const [a, b] = g.edges[e].v, A = g.verts[a], B = g.verts[b], k = .2, xy = `x1="${f1(A.x + (B.x - A.x) * k)}" y1="${f1(A.y + (B.y - A.y) * k)}" x2="${f1(B.x + (A.x - B.x) * k)}" y2="${f1(B.y + (A.y - B.y) * k)}"`;
+    h += `<g data-h="e:${e}"><line class="he" ${xy}/><line class="hit" ${xy} stroke-width="24" stroke-linecap="round"/></g>`; });
+  hs.v.forEach(v => { const V = g.verts[v]; h += `<g data-h="v:${v}"><circle class="hv" cx="${f1(V.x)}" cy="${f1(V.y)}" r="9"/><circle class="hit" cx="${f1(V.x)}" cy="${f1(V.y)}" r="20"/></g>`; });
+  hs.c.forEach(v => { const V = g.verts[v]; h += `<g data-h="v:${v}"><circle class="hc" cx="${f1(V.x)}" cy="${f1(V.y)}" r="20"/><circle class="hit" cx="${f1(V.x)}" cy="${f1(V.y)}" r="24"/></g>`; });
   setHTML($('#hot'), h);
 }
 function hotspots() {
